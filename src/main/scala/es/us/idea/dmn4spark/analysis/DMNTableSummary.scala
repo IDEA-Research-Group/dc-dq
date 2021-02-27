@@ -1,22 +1,26 @@
 package es.us.idea.dmn4spark.analysis
 
 import org.camunda.bpm.dmn.engine.DmnDecision
-import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableImpl
+import org.camunda.bpm.dmn.engine.impl.{DmnDecisionTableImpl, DmnDecisionTableRuleImpl}
+
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
 case class Attribute(name: String, dataType: String)
 case class Value(name: String, value: String, dataType: String)
 
-class DMNTableSummary(name: String, key: String, inputAttributes: List[Attribute], outputValues: List[Value]) {
+class DMNTableSummary(name: String, key: String, inputAttributes: List[Attribute], outputValues: List[Value],
+                      rules: List[DmnDecisionTableRuleImpl] = List()) {
 
   // getters
   def name(): String = name
   def key(): String = key
   def inputAttributes(): List[Attribute] = inputAttributes
   def outputValues(): List[Value] = outputValues
+  def rules(): List[DmnDecisionTableRuleImpl] = rules
 
   override def toString: String = s"DMNTableSummary{name: $name, key: $key, " +
-    s"inputAttributes: [${inputAttributes.mkString(", ")}], outputValues: [${outputValues.mkString(", ")}]}"
+    s"inputAttributes: [${inputAttributes.mkString(", ")}], outputValues: [${outputValues.mkString(", ")}], " +
+    s"#rules: ${rules.size}}"
 
 }
 
@@ -26,6 +30,7 @@ object DMNTableSummary {
     val key = dmnDecision.getKey
 
     val dmnDecisionTable = dmnDecision.getDecisionLogic.asInstanceOf[DmnDecisionTableImpl]
+    val rules = dmnDecisionTable.getRules.asScala.toList
 
     val inputAttributes = dmnDecisionTable.getInputs.asScala
       .map(x => Attribute(x.getExpression.getExpression, x.getExpression.getTypeDefinition.getTypeName)).toList
@@ -34,7 +39,7 @@ object DMNTableSummary {
     val outputNamesAndType = dmnDecisionTable.getOutputs.asScala.map(x => (x.getOutputName, x.getTypeDefinition.getTypeName))
 
     // Result: (expression value)
-    val outputExpressions = dmnDecisionTable.getRules.asScala.map(x => x.getConclusions.asScala.map(_.getExpression)).toList
+    val outputExpressions = rules.map(x => x.getConclusions.asScala.map(_.getExpression)).toList
 
     val outputValues = outputExpressions.flatMap(x => outputNamesAndType.zip(x).map(y => {
       val attName = y._1._1
@@ -43,6 +48,6 @@ object DMNTableSummary {
       Value(attName, value, attType)
     }))
 
-    new DMNTableSummary(name, key, inputAttributes, outputValues)
+    new DMNTableSummary(name, key, inputAttributes, outputValues, rules)
   }
 }
