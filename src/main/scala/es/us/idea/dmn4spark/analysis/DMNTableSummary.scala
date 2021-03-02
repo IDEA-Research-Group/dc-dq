@@ -1,12 +1,10 @@
 package es.us.idea.dmn4spark.analysis
 
+import es.us.idea.dmn4spark.analysis.model.{Attribute, Value}
 import org.camunda.bpm.dmn.engine.DmnDecision
 import org.camunda.bpm.dmn.engine.impl.{DmnDecisionTableImpl, DmnDecisionTableRuleImpl}
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
-
-case class Attribute(name: String, dataType: String)
-case class Value(name: String, value: String, dataType: String)
 
 class DMNTableSummary(name: String, key: String, inputAttributes: List[Attribute], outputValues: List[Value],
                       rules: List[DmnDecisionTableRuleImpl] = List()) {
