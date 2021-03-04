@@ -1,6 +1,6 @@
 package es.us.idea.dmn4spark.analysis
 
-import es.us.idea.dmn4spark.analysis.model.{Attribute, Condition, Rule, Value}
+import es.us.idea.dmn4spark.analysis.model.{Attribute, Value}
 import org.camunda.bpm.dmn.engine.DmnDecision
 import org.camunda.bpm.dmn.engine.impl.{DmnDecisionTableImpl, DmnDecisionTableRuleImpl}
 

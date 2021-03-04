@@ -1,9 +1,9 @@
-package es.us.idea.dmn4spark.analysis.model
+package es.us.idea.dmn4spark.analysis
 
-import es.us.idea.dmn4spark.dmn.engine.SafeCamundaFeelEngineFactory
-import org.camunda.bpm.engine.variable.impl.context.SingleVariableContext
-import org.camunda.bpm.engine.variable.impl.value.PrimitiveTypeValueImpl.{BooleanValueImpl, DoubleValueImpl, IntegerValueImpl, LongValueImpl, NumberValueImpl, StringValueImpl}
+import es.us.idea.dmn4spark.analysis.model.{Attribute, Value}
 import org.camunda.bpm.dmn.feel.impl.FeelEngine
+import org.camunda.bpm.engine.variable.impl.context.SingleVariableContext
+import org.camunda.bpm.engine.variable.impl.value.PrimitiveTypeValueImpl._
 
 class Condition(inputAttribute: Attribute, expression: String) {
   def inputAttribute(): Attribute = inputAttribute

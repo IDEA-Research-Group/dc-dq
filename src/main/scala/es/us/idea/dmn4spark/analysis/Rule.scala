@@ -1,8 +1,9 @@
-package es.us.idea.dmn4spark.analysis.model
+package es.us.idea.dmn4spark.analysis
 
 import java.util.NoSuchElementException
 
-import es.us.idea.dmn4spark.Combinations
+import es.us.idea.dmn4spark.analysis.extended.ExtendedRule
+import es.us.idea.dmn4spark.analysis.model.{Attribute, Value}
 import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableRuleImpl
 import org.camunda.bpm.dmn.feel.impl.FeelEngine
 
@@ -20,7 +21,7 @@ class Rule(order: Int, conditions: List[Condition], conclusions: List[Value]) {
 
     // generar todas las combinaciones posibles para todos los input values
     // Debe salir una lista de listas. Cada lista de Value contiene los values que hacen que la regla se dispare
-    val allCombinations = Combinations.combinations(validInputValues)
+    val allCombinations = Utils.combinations(validInputValues)
 
     //TODO crear las ExtendedRules fusionandola con la conclusion
     allCombinations.map(r => ExtendedRule(order, r, conclusions))

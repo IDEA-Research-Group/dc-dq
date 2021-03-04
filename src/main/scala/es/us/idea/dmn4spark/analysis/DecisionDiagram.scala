@@ -13,7 +13,8 @@ import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 class DecisionDiagram(dmnTablesSummaries: List[DMNTable]) {
   def dmnTablesSummaries(): List[DMNTable] = dmnTablesSummaries
 
-  override def toString: String = s"DecisionDiagramSummary\n**** Printing DMN table summaries ****\n${dmnTablesSummaries.mkString("\n")}"
+  override def toString: String =
+    s"DecisionDiagramSummary\n**** Printing DMN table summaries ****\n${dmnTablesSummaries.mkString("\n")}"
 }
 
 object DecisionDiagram {
