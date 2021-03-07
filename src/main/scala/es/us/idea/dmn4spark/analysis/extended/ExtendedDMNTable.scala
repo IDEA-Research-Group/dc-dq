@@ -1,9 +1,7 @@
-package es.us.idea.dmn4spark.analysis
+package es.us.idea.dmn4spark.analysis.extended
 
-import es.us.idea.dmn4spark.analysis.model.{ExtendedRule, Value}
+import es.us.idea.dmn4spark.analysis.{DMNTable, DecisionDiagram}
 import org.camunda.bpm.dmn.feel.impl.FeelEngine
-
-import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
 class ExtendedDMNTable(dmnTableSummary: DMNTable, extendedRules: List[ExtendedRule], isLeafTable: Boolean) {
 
@@ -15,7 +13,7 @@ class ExtendedDMNTable(dmnTableSummary: DMNTable, extendedRules: List[ExtendedRu
 
 object ExtendedDMNTable {
 
-  def apply(dmnTableSummary: DMNTable, context: DecisionDiagram, feelEngine: FeelEngine) = {
+  def apply(dmnTableSummary: DMNTable, context: DecisionDiagram, avoidDuplicatedConditions: Boolean, feelEngine: FeelEngine) = {
     val allTableOutputs = context.dmnTablesSummaries().flatMap(x => x.outputValues())
     val tableInputs = dmnTableSummary.inputAttributes()
     // Primero, empareja cada input con sus posibles valores de salida
@@ -28,7 +26,20 @@ object ExtendedDMNTable {
       new ExtendedDMNTable(dmnTableSummary, List(), true)
     } else {
       val extendedRules = dmnTableSummary.rules().flatMap(_.extendRule(inputValues, feelEngine))
-      new ExtendedDMNTable(dmnTableSummary, extendedRules, false)
+      val finalExtendedRules =
+        if(avoidDuplicatedConditions) removeDuplicatedConditionsByOrder(extendedRules) else extendedRules
+      new ExtendedDMNTable(dmnTableSummary, finalExtendedRules, false)
     }
   }
+
+  private def removeDuplicatedConditionsByOrder(extendedRules: List[ExtendedRule]) = {
+    val extendedRulesSorted = extendedRules.sortBy(_.order())
+    var result: List[ExtendedRule] = List()
+    for(extendedRule <- extendedRulesSorted) {
+      val exists = result.exists(er => er.conditions().equals(extendedRule.conditions()))
+      if(!exists) result = result :+ extendedRule
+    }
+    result
+  }
+
 }

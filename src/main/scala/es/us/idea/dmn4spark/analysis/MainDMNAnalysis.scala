@@ -10,6 +10,8 @@ import org.camunda.bpm.dmn.engine.impl.spi.`type`.DmnTypeDefinition
 import org.camunda.bpm.engine.variable.impl.context.SingleVariableContext
 import org.camunda.bpm.engine.variable.impl.value.PrimitiveTypeValueImpl._
 
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+
 object MainDMNAnalysis {
   def combinations[T](toCombine: List[List[T]]): List[List[T]] = {
     toCombine match {

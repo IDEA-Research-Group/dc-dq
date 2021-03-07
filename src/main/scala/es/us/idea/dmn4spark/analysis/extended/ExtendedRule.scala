@@ -1,4 +1,6 @@
-package es.us.idea.dmn4spark.analysis.model
+package es.us.idea.dmn4spark.analysis.extended
+
+import es.us.idea.dmn4spark.analysis.model.Value
 
 class ExtendedRule(order: Int, conditions: List[Value], conclusions: List[Value]) {
 
