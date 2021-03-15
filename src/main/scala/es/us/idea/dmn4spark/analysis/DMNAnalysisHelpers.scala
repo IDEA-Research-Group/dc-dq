@@ -26,8 +26,8 @@ object DMNAnalysisHelpers {
 
   }
 
-  implicit class ClearString(str: String) {
-    def clear(): String = str.replaceAll("^\"|\"$", "").trim
+  implicit class CleanString(str: String) {
+    def clean(): String = str.replaceAll("^\"|\"$", "").trim
   }
 
 }
