@@ -7,6 +7,7 @@ trait Vertex {
   def id(): String
 
   def getChildren(implicit tree: Tree): List[Vertex] = tree.getChildren(this)
+  def getAllDescendants(implicit tree: Tree): List[Vertex] = tree.getAllDescendants(this)
   def isLeaf(implicit tree: Tree): Boolean = tree.isLeaf(this)
 
   def canEqual(a: Any): Boolean = a.isInstanceOf[Vertex]
