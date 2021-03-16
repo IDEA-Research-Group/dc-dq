@@ -9,8 +9,27 @@ class Tree(vertices: List[Vertex], edges: List[DirectedEdge]){
 
   def vertices(): List[Vertex] = vertices
   def edges(): List[DirectedEdge] = edges
+
   def getChildren(vertex: Vertex): List[Vertex] =
-    edges.filter(_.source() == vertex).map(_.target())
+    edges().filter(_.source() == vertex).map(_.target())
+
+  def getRoots(): List[Vertex] = {
+    val allTargetVertices = edges().map(_.target()).distinct
+    vertices().filterNot(vertex => allTargetVertices.contains(vertex))
+  }
+
+  def pruneDescendants(vertex: Vertex): Tree = {
+    val descendants = vertex.getAllDescendants
+    Tree(
+      vertices().filter(!descendants.contains(_)),
+      edges().filter(edge => !descendants.contains(edge.source()) && !descendants.contains(edge.target()))
+    )
+  }
+
+  def pruneDescendants(vertices: List[Vertex]): Tree = {
+     //.reduce((t1, t2) => t1.union(t2))
+    union(vertices.map(pruneDescendants))
+  }
 
   def isLeaf(vertex: Vertex): Boolean =
     !edges.exists(_.source() == vertex)
@@ -77,6 +96,11 @@ class Tree(vertices: List[Vertex], edges: List[DirectedEdge]){
     val (vertices, edges) = trees.map(tree => (tree.vertices.toSet, tree.edges.toSet)).reduce((x, y) => (x._1 union y._1, x._2 union y._2))
     Tree(vertices.toList, edges.toList)
   }
+
+//  def union(tree: Tree): Tree = {
+//    val (vertices, edges) = (tree.vertices().toSet union this.vertices().toSet, tree.edges().toSet union this.edges().toSet)
+//    Tree(vertices.toList, edges.toList)
+//  }
 
 }
 
