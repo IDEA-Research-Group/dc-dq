@@ -6,6 +6,8 @@ import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, Directe
 class Tree(vertices: List[Vertex], edges: List[DirectedEdge]){
 
   implicit val __ : Tree = this
+  lazy val id: String = hashCode().toHexString
+
 
   def vertices(): List[Vertex] = vertices
   def edges(): List[DirectedEdge] = edges
@@ -101,6 +103,23 @@ class Tree(vertices: List[Vertex], edges: List[DirectedEdge]){
 //    val (vertices, edges) = (tree.vertices().toSet union this.vertices().toSet, tree.edges().toSet union this.edges().toSet)
 //    Tree(vertices.toList, edges.toList)
 //  }
+
+  def canEqual(a: Any): Boolean = a.isInstanceOf[Tree]
+
+  override def equals(that: Any): Boolean = {
+    that match {
+      case that: Tree => {
+        that.canEqual(this) &&
+          that.vertices().toSet.equals(this.vertices().toSet) &&
+          that.edges().toSet.equals(this.edges().toSet)
+      }
+      case _ => false
+    }
+  }
+
+  override def hashCode(): Int = vertices().toSet.hashCode() * edges().toSet.hashCode() * 47
+
+  def getId: String = id
 
 }
 
