@@ -35,7 +35,7 @@ class DMNExecutor(input: Array[Byte]) extends Serializable{
   @transient lazy val dmnModelInstance: DmnModelInstance = Dmn.readModelFromStream(new ByteArrayInputStream(input))
 
   @transient lazy val decisions: Seq[DmnDecision] = JavaConverters.collectionAsScalaIterableConverter(dmnEngine.parseDecisions(dmnModelInstance)).asScala.toSeq
-  @transient lazy val decisionKeys: Seq[String] = decisions.map(_.getKey)
+  @transient lazy val decisionKeys: Seq[String] = decisions.map(_.getName)
 
   def getDecisionsResults(map: java.util.HashMap[String, AnyRef]): Seq[String] = {
     decisions.map(d => dmnEngine.evaluateDecisionTable(d, map).getFirstResult.getEntry(d.getKey).toString)
