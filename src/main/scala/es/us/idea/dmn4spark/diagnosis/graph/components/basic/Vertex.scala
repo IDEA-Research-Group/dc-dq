@@ -7,6 +7,7 @@ trait Vertex {
   def id(): String
 
   def getChildren(implicit tree: Tree): List[Vertex] = tree.getChildren(this)
+  def getParents(implicit tree: Tree): List[Vertex] = tree.getParents(this)
   def getAllDescendants(implicit tree: Tree): List[Vertex] = tree.getAllDescendants(this)
   def isLeaf(implicit tree: Tree): Boolean = tree.isLeaf(this)
 

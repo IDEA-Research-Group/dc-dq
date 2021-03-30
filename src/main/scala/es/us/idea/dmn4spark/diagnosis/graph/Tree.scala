@@ -15,6 +15,9 @@ class Tree(vertices: List[Vertex], edges: List[DirectedEdge]){
   def getChildren(vertex: Vertex): List[Vertex] =
     edges().filter(_.source() == vertex).map(_.target())
 
+  def getParents(vertex: Vertex): List[Vertex] =
+    edges().filter(_.target() == vertex).map(_.source())
+
   def getRoots(): List[Vertex] = {
     val allTargetVertices = edges().map(_.target()).distinct
     vertices().filterNot(vertex => allTargetVertices.contains(vertex))
