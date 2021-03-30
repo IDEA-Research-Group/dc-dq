@@ -1,6 +1,6 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components.basic
 
-class DirectedEdge(source: Vertex, target: Vertex) {
+class DirectedEdge(source: Vertex, target: Vertex) extends Serializable {
   def source(): Vertex = source
   def target(): Vertex = target
 

@@ -2,7 +2,7 @@ package es.us.idea.dmn4spark.diagnosis.graph.components.basic
 
 import es.us.idea.dmn4spark.diagnosis.graph.{DMN4DQTree, Tree}
 
-trait Vertex {
+trait Vertex extends Serializable {
 
   def id(): String
 

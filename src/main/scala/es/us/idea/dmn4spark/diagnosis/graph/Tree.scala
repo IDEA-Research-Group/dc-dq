@@ -3,7 +3,7 @@ package es.us.idea.dmn4spark.diagnosis.graph
 import es.us.idea.dmn4spark.analysis.Utils
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
 
-class Tree(vertices: List[Vertex], edges: List[DirectedEdge]){
+class Tree(vertices: List[Vertex], edges: List[DirectedEdge]) extends Serializable {
 
   implicit val __ : Tree = this
   lazy val id: String = hashCode().toHexString
