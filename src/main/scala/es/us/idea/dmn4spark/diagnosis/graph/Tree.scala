@@ -2,6 +2,7 @@ package es.us.idea.dmn4spark.diagnosis.graph
 
 import es.us.idea.dmn4spark.analysis.Utils
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
+import play.api.libs.json.{JsArray, JsObject, JsString}
 
 class Tree(vertices: List[Vertex], edges: List[DirectedEdge]) extends Serializable {
 
@@ -123,6 +124,14 @@ class Tree(vertices: List[Vertex], edges: List[DirectedEdge]) extends Serializab
   override def hashCode(): Int = vertices().toSet.hashCode() * edges().toSet.hashCode() * 47
 
   def getId: String = id
+
+  def convert2json: JsObject = {
+    JsObject(Seq(
+      "id" -> JsString(getId),
+      "vertices" -> JsArray(vertices().map(_.convert2json)),
+      "edges" -> JsArray(edges().map(_.convert2json))
+    ))
+  }
 
 }
 
