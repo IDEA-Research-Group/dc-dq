@@ -1,5 +1,7 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components.basic
 
+import play.api.libs.json.{JsObject, JsString}
+
 class DirectedEdge(source: Vertex, target: Vertex) extends Serializable {
   def source(): Vertex = source
   def target(): Vertex = target
@@ -17,6 +19,8 @@ class DirectedEdge(source: Vertex, target: Vertex) extends Serializable {
   override def hashCode(): Int = this.source().hashCode() * this.target().hashCode() * 17
 
   override def toString: String = s"DirectedEdge[source=$source(), target=$target()]"
+
+  def convert2json: JsObject = JsObject(Seq("source" -> JsString(source().id()), "target" -> JsString(target().id())))
 
 }
 

@@ -1,6 +1,7 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components.basic
 
 import es.us.idea.dmn4spark.diagnosis.graph.{DMN4DQTree, Tree}
+import play.api.libs.json.JsObject
 
 trait Vertex extends Serializable {
 
@@ -22,5 +23,6 @@ trait Vertex extends Serializable {
 
   override def hashCode(): Int = this.id().hashCode * 17
 
+  def convert2json: JsObject
 
 }
