@@ -19,5 +19,7 @@ object Measurement {
   def apply(dimensionMeasurement: List[DimensionMeasurement]): Measurement =
     new Measurement(s"Observation[${dimensionMeasurement.sorted.mkString(":")}]".hashCode.toHexString)
   def apply(): Measurement = new Measurement(randomUUID().toString)
-  
+
+  def deserializeJson(jsObject: JsObject): Measurement = new Measurement(jsObject.value("id").as[String])
+
 }

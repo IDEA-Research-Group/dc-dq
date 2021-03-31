@@ -20,5 +20,7 @@ object Assessment {
 
   def apply(value: String): Assessment = new Assessment(value)
 
+  def deserializeJson(jsObject: JsObject): Assessment = new Assessment(jsObject.value("value").as[String])
+
 
 }

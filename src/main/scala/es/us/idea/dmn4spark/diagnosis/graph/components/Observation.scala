@@ -20,4 +20,6 @@ object Observation{
     s"Observation[${brdvs.sorted.mkString(":")}]".hashCode.toHexString
   )
 
+  def deserializeJson(jsObject: JsObject): Observation = new Observation(jsObject.value("id").as[String])
+
 }

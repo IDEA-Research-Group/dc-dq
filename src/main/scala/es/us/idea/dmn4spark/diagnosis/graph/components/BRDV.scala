@@ -24,7 +24,7 @@ class BRDV(name: String, value: String) extends Value(name, value, "string") wit
     Seq(
       "type" -> JsString("BRDV"),
       "name" -> JsString(name),
-      "value" -> JsString("value"),
+      "value" -> JsString(value),
       "id" -> JsString(id())
     )
   )
@@ -33,4 +33,8 @@ class BRDV(name: String, value: String) extends Value(name, value, "string") wit
 object BRDV {
   //def apply(name: String, value: String, id: String): BRDV = new BRDV(name, value, id)
   def apply(name: String, value: String): BRDV = new BRDV(name, value)
+  def deserializeJson(jsObject: JsObject): BRDV = {
+    val m = jsObject.value
+    new BRDV(m("name").as[String], m("value").as[String])
+  }
 }

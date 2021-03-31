@@ -31,4 +31,9 @@ object DimensionMeasurement {
   def apply(dimensionName: String, measuredValue: String): DimensionMeasurement =
     new DimensionMeasurement(dimensionName, measuredValue)
 
+  def deserializeJson(jsObject: JsObject): DimensionMeasurement = {
+    val m = jsObject.value
+    new DimensionMeasurement(m("dimensionName").as[String], m("measuredValue").as[String])
+  }
+
 }
