@@ -1,12 +1,12 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components
 
 import es.us.idea.dmn4spark.analysis.model.Value
-import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{Leaf, Vertex}
+import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, Leaf, Vertex}
 import play.api.libs.json.{JsObject, JsString}
 
 import scala.math.Ordered.orderingToOrdered
 
-class BRDV(name: String, value: String) extends Value(name, value, "string") with Vertex
+class BRDV(name: String, value: String) extends Value(name, value, "string") with AndVertex
   with Ordered[BRDV] {
 
 
@@ -14,9 +14,9 @@ class BRDV(name: String, value: String) extends Value(name, value, "string") wit
 
   override def toString: String = s"BRDV@$id[name=$name, value=$value]"
 
-  override def canEqual(a: Any): Boolean = super[Vertex].canEqual(a)
-  override def equals(that: Any): Boolean = super[Vertex].equals(that)
-  override def hashCode(): Int = super[Vertex].hashCode()
+  override def canEqual(a: Any): Boolean = super[AndVertex].canEqual(a)
+  override def equals(that: Any): Boolean = super[AndVertex].equals(that)
+  override def hashCode(): Int = super[AndVertex].hashCode()
 
   override def compare(that: BRDV): Int = this.id compare that.id
 
