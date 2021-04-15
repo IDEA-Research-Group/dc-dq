@@ -4,103 +4,69 @@ import es.us.idea.dmn4spark.analysis.Utils
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
 import play.api.libs.json.{JsArray, JsObject, JsString}
 
-class Tree(vertices: List[Vertex], edges: List[DirectedEdge]) extends Serializable {
+class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable {
 
   implicit val __ : Tree = this
   lazy val id: String = hashCode().toHexString
 
 
-  def vertices(): List[Vertex] = vertices
-  def edges(): List[DirectedEdge] = edges
+  def vertices(): Set[Vertex] = vertices
+  def edges(): Set[DirectedEdge] = edges
 
-  def getChildren(vertex: Vertex): List[Vertex] =
+  def verticesAndEdges(): (Set[Vertex], Set[DirectedEdge]) = (vertices(), edges())
+
+  def getChildren(vertex: Vertex): Set[Vertex] =
     edges().filter(_.source() == vertex).map(_.target())
 
-  def getParents(vertex: Vertex): List[Vertex] =
+  def getParents(vertex: Vertex): Set[Vertex] =
     edges().filter(_.target() == vertex).map(_.source())
 
-  def getRoots(): List[Vertex] = {
-    val allTargetVertices = edges().map(_.target()).distinct
+  def getRoots(): Set[Vertex] = {
+    val allTargetVertices = edges().map(_.target())
     vertices().filterNot(vertex => allTargetVertices.contains(vertex))
   }
 
-  def pruneDescendants(vertex: Vertex): Tree = {
-    val descendants = vertex.getAllDescendants
-    Tree(
-      vertices().filter(!descendants.contains(_)),
-      edges().filter(edge => !descendants.contains(edge.source()) && !descendants.contains(edge.target()))
-    )
-  }
-
-  def pruneDescendants(vertices: List[Vertex]): Tree = {
-     //.reduce((t1, t2) => t1.union(t2))
-    union(vertices.map(pruneDescendants))
-  }
+//  // FIXME prune methods
+//  def pruneDescendants(vertex: Vertex): Tree = {
+//    val descendants = vertex.getAllDescendants
+//    Tree(
+//      vertices().filter(!descendants.contains(_)),
+//      edges().filter(edge => !descendants.contains(edge.source()) && !descendants.contains(edge.target()))
+//    )
+//  }
+//
+//  def pruneDescendants(vertices: List[Vertex]): Tree = {
+//     //.reduce((t1, t2) => t1.union(t2))
+//    union(vertices.map(pruneDescendants))
+//  }
 
   def isLeaf(vertex: Vertex): Boolean =
     !edges.exists(_.source() == vertex)
 
-  def getAllDescendants(vertex: Vertex): List[Vertex] = {
+  def getAllDescendants(vertex: Vertex): Set[Vertex] = {
     val children = vertex.getChildren
     // get children of children
-    children ::: children.flatMap(getAllDescendants)
+    //children ::: children.flatMap(getAllDescendants)
+    children ++ children.flatMap(getAllDescendants)
   }
 
   def findAllBranches(vertex: Vertex): List[Tree] = {
-    def recursive(v: Vertex, visited: List[Vertex], visitedEdges: List[DirectedEdge]): List[Tree] = {
+    def recursive(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[Tree] = {
       var toReturn: List[Tree] = List()
       v.getChildren.foreach(child =>{
-        if(child.isLeaf) toReturn = toReturn :+ Tree(visited :+ child, visitedEdges :+ DirectedEdge(v, child))
-        else toReturn = toReturn ++ recursive(child, visited:+child, visitedEdges :+ DirectedEdge(v, child))
+        if(child.isLeaf) toReturn = toReturn :+ Tree(visited + child, visitedEdges + DirectedEdge(v, child))
+        else toReturn = toReturn ++ recursive(child, visited+child, visitedEdges + DirectedEdge(v, child))
       })
       toReturn
     }
-    recursive(vertex, List(vertex), List())
+    recursive(vertex, Set(vertex), Set())
   }
 
-  def findAllBranchesAndOrSensitive(vertex: Vertex): List[Tree] = {
 
-    def recursive(v: Vertex, visited: List[Vertex], visitedEdges: List[DirectedEdge]): List[Tree] = {
-      var toReturn: List[Tree] = List()
-
-      v.getChildren.foreach(child =>{
-        if(child.isLeaf) toReturn = toReturn :+ Tree(visited :+ child, visitedEdges :+ DirectedEdge(v, child))
-        else {
-          child match {
-            case andVertex: AndVertex => toReturn = toReturn ++ recursiveAnd(andVertex, visited:+andVertex, visitedEdges :+ DirectedEdge(v, andVertex))
-            case _ => toReturn = toReturn ++ recursive(child, visited:+child, visitedEdges :+ DirectedEdge(v, child))
-          }
-        }
-      })
-      toReturn
-    }
-
-    def recursiveAnd(v: Vertex, visited: List[Vertex], visitedEdges: List[DirectedEdge]): List[Tree] = {
-      var andVerticesBranches: List[(Vertex, Tree)] = List()
-
-      v.getChildren.foreach(child => {
-        if(child.isLeaf) andVerticesBranches = andVerticesBranches :+ (child, Tree(visited :+ child, visitedEdges :+ DirectedEdge(v, child)))
-        else {
-          child match {
-            case andVertex: AndVertex =>
-              andVerticesBranches = andVerticesBranches ++
-                recursiveAnd(andVertex, visited :+ andVertex, visitedEdges :+ DirectedEdge(v, andVertex)).map(x => (andVertex, x))
-            case _ =>
-              andVerticesBranches = andVerticesBranches ++
-                recursive(child, visited :+ child, visitedEdges :+ DirectedEdge(v, child)).map(x => (child, x))
-          }
-        }
-      })
-
-      val groupedBranches = andVerticesBranches.groupBy(_._1).map(x => x._2.map(_._2)).toList
-      Utils.combinations(groupedBranches).map(el => union(el))
-    }
-    recursive(vertex, List(vertex), List())
-  }
 
   def union(trees: List[Tree]): Tree = {
-    val (vertices, edges) = trees.map(tree => (tree.vertices.toSet, tree.edges.toSet)).reduce((x, y) => (x._1 union y._1, x._2 union y._2))
-    Tree(vertices.toList, edges.toList)
+    val (vertices, edges) = trees.map(tree => (tree.vertices, tree.edges)).reduce((x, y) => (x._1 union y._1, x._2 union y._2))
+    Tree(vertices, edges)
   }
 
 //  def union(tree: Tree): Tree = {
@@ -128,13 +94,13 @@ class Tree(vertices: List[Vertex], edges: List[DirectedEdge]) extends Serializab
   def convert2json: JsObject = {
     JsObject(Seq(
       "id" -> JsString(getId),
-      "vertices" -> JsArray(vertices().map(_.convert2json)),
-      "edges" -> JsArray(edges().map(_.convert2json))
+      "vertices" -> JsArray(vertices().toList.map(_.convert2json)),
+      "edges" -> JsArray(edges().toList.map(_.convert2json))
     ))
   }
 
 }
 
 object Tree {
-  def apply(vertices: List[Vertex], edges: List[DirectedEdge]): Tree = new Tree(vertices, edges)
+  def apply(vertices: Set[Vertex], edges: Set[DirectedEdge]): Tree = new Tree(vertices, edges)
 }
