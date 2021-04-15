@@ -7,8 +7,8 @@ trait Vertex extends Serializable {
 
   def id(): String
 
-  def getChildren(implicit tree: Tree): Set[Vertex] = tree.getChildren(this)
-  def getParents(implicit tree: Tree): Set[Vertex] = tree.getParents(this)
+  def getChildren(implicit tree: Tree): Set[_ <: Vertex] = tree.getChildren(this)
+  def getParents(implicit tree: Tree): Set[_ <: Vertex] = tree.getParents(this)
   def getAllDescendants(implicit tree: Tree): Set[Vertex] = tree.getAllDescendants(this)
   def isLeaf(implicit tree: Tree): Boolean = tree.isLeaf(this)
 
