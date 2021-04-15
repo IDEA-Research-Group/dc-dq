@@ -7,6 +7,8 @@ import org.camunda.bpm.dmn.feel.impl.FeelEngine
 class ExtendedDecisionDiagram(extendedDMNTables: List[ExtendedDMNTable], avoidDuplicatedConditions: Boolean ) {
   def extendedDMNTables(): List[ExtendedDMNTable] = extendedDMNTables
   def avoidDuplicated(): Boolean = avoidDuplicatedConditions
+  def getLeafExtendedDMNTables(): List[ExtendedDMNTable] = extendedDMNTables.filter(_.isLeafTable())
+  def getNoLeafExtendedDMNTables(): List[ExtendedDMNTable] = extendedDMNTables.filter(! _.isLeafTable())
   // override def toString: String =
   //   s"ExtendedDecisionDiagram \n**** Printing DMN table summaries ****\n${dmnTablesSummaries.mkString("\n")}"
 }
