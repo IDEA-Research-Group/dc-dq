@@ -1,0 +1,25 @@
+package es.us.idea.dmn4spark.diagnosis.graph.components
+
+import es.us.idea.dmn4spark.diagnosis.graph.components.basic.Vertex
+import play.api.libs.json.{JsObject, JsString}
+
+class Decision(decision: String) extends Vertex {
+
+  def decision(): String = decision
+
+  override def toString: String = s"Decision@${id()}[value=$decision]"
+
+  override def id(): String = decision.hashCode.toHexString
+
+  override def convert2json: JsObject =
+    JsObject(Seq("type" -> JsString("Decision"), "decision" -> JsString(decision()), "id" -> JsString(id())))
+
+}
+
+object Decision {
+
+  def apply(decision: String): Decision = new Decision(decision)
+
+  def deserializeJson(jsObject: JsObject): Decision = new Decision(jsObject.value("decision").as[String])
+
+}
