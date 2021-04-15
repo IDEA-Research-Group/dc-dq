@@ -1,11 +1,24 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components
 import java.util.UUID.randomUUID
 
+import es.us.idea.dmn4spark.diagnosis.graph.Tree
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, Vertex}
 import play.api.libs.json.{JsObject, JsString}
 
 class Observation(id: String) extends AndVertex {
   def id(): String = id
+
+  override def getChildren(implicit tree: Tree): Set[BRDV] =
+    super.getChildren.flatMap {
+      case x: BRDV => Some(x)
+      case _ => None
+    }
+
+  override def getParents(implicit tree: Tree): Set[DimensionMeasurement] =
+    super.getParents.flatMap {
+      case x: DimensionMeasurement => Some(x)
+      case _ => None
+    }
 
   override def toString: String = s"Observation@$id[]"
 

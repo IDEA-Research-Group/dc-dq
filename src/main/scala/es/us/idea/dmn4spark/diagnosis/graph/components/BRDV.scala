@@ -1,6 +1,7 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components
 
 import es.us.idea.dmn4spark.analysis.model.Value
+import es.us.idea.dmn4spark.diagnosis.graph.Tree
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, Leaf, Vertex}
 import play.api.libs.json.{JsObject, JsString}
 
@@ -9,8 +10,19 @@ import scala.math.Ordered.orderingToOrdered
 class BRDV(name: String, value: String) extends Value(name, value, "string") with AndVertex
   with Ordered[BRDV] {
 
-
   override def id(): String = s"BRDV[$name:$value]".hashCode.toHexString
+
+  override def getChildren(implicit tree: Tree): Set[Attribute] =
+    super.getChildren.flatMap {
+      case x: Attribute => Some(x)
+      case _ => None
+    }
+
+  override def getParents(implicit tree: Tree): Set[Observation] =
+    super.getParents.flatMap {
+      case x: Observation => Some(x)
+      case _ => None
+    }
 
   override def toString: String = s"BRDV@$id[name=$name, value=$value]"
 

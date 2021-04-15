@@ -1,5 +1,6 @@
 package es.us.idea.dmn4spark.diagnosis.graph.components
 
+import es.us.idea.dmn4spark.diagnosis.graph.Tree
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.Vertex
 import play.api.libs.json.{JsObject, JsString}
 
@@ -7,6 +8,12 @@ class Attribute(name: String) extends Vertex
   with Ordered[Attribute] {
 
   override def id(): String = name.hashCode.toHexString
+
+  override def getParents(implicit tree: Tree): Set[BRDV] =
+    super.getParents.flatMap {
+      case x: BRDV => Some(x)
+      case _ => None
+    }
 
   override def toString: String = s"Attribute@$id[name=$name]"
 
