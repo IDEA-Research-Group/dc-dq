@@ -15,13 +15,13 @@ class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable
 
   def verticesAndEdges(): (Set[Vertex], Set[DirectedEdge]) = (vertices(), edges())
 
-  def getChildren(vertex: Vertex): Set[Vertex] =
+  def getChildren(vertex: Vertex): Set[_ <: Vertex] =
     edges().filter(_.source() == vertex).map(_.target())
 
   def getParents(vertex: Vertex): Set[Vertex] =
     edges().filter(_.target() == vertex).map(_.source())
 
-  def getRoots(): Set[Vertex] = {
+  def getRoots(): Set[_ <: Vertex] = {
     val allTargetVertices = edges().map(_.target())
     vertices().filterNot(vertex => allTargetVertices.contains(vertex))
   }
