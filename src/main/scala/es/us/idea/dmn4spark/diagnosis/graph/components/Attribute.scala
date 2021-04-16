@@ -9,6 +9,8 @@ class Attribute(name: String) extends Vertex
 
   override def id(): String = name.hashCode.toHexString
 
+  def name(): String = name
+
   override def getParents(implicit tree: Tree): Set[BRDV] =
     super.getParents.flatMap {
       case x: BRDV => Some(x)
