@@ -2,19 +2,17 @@ package es.us.idea.dmn4spark.diagnosis.graph
 
 import es.us.idea.dmn4spark.analysis.{DMNAnalysisHelpers, Utils}
 import es.us.idea.dmn4spark.analysis.extended.ExtendedDecisionDiagram
-import es.us.idea.dmn4spark.diagnosis.graph.adapters.JGraphtAdapter
 import es.us.idea.dmn4spark.diagnosis.graph.components.{Assessment, Attribute, BRDV, Decision, DimensionMeasurement, Measurement, Observation}
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
 import es.us.idea.dmn4spark.diagnosis.graph.structure.DMN4DQStructure
 import play.api.libs.json._
 
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.util.Try
 
 class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: Option[DMN4DQStructure] = None)
   extends Tree(vertices, edges) with Serializable {
 
-  lazy val structure: DMN4DQStructure = {
+  lazy val branchStructure: DMN4DQStructure = {
     structureOpt match {
       case Some(map) => map
       case _ => inferStructure()
@@ -188,31 +186,45 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
       case _ =>
     }
 
-    if(assessmentList.size == 1) {
-      val assessment = assessmentList.head
-      val measurement = Measurement(dqmList)
-      branchVertices = (branchVertices + assessment) + measurement
-      branchEdges = branchEdges + DirectedEdge(assessment, measurement)
+    if(decisionList.size == 1) {
+      val decision = decisionList.head
+      branchVertices = branchVertices + decision
 
-      dqmList.foreach(measurementDimension => {
-        branchVertices = branchVertices + measurementDimension
-        branchEdges = branchEdges + DirectedEdge(measurement, measurementDimension)
-        structure.dimensionToBrdv.get(measurementDimension.dimensionName()) match {
-          case Some(x) => {
-            val candidateBrdvs = x.map(brdvName => brdvList.find(_.name == brdvName)).filter(_.isDefined).map(_.get)
-            val observation = Observation(candidateBrdvs)
-            branchVertices = branchVertices + observation
-            branchEdges = branchEdges + DirectedEdge(measurementDimension, observation)
-            candidateBrdvs.foreach(brdv => {
-              branchVertices = branchVertices + brdv
-              branchEdges = branchEdges + DirectedEdge(observation, brdv)
-            })
+      if(assessmentList.size == 1) {
+        val assessment = assessmentList.head
+        branchEdges = branchEdges + DirectedEdge(decision, assessment)
+
+        val measurement = Measurement(dqmList)
+        branchVertices = (branchVertices + assessment) + measurement
+        branchEdges = branchEdges + DirectedEdge(assessment, measurement)
+
+        dqmList.foreach(measurementDimension => {
+          branchVertices = branchVertices + measurementDimension
+          branchEdges = branchEdges + DirectedEdge(measurement, measurementDimension)
+          branchStructure.dimensionToBrdv.get(measurementDimension.dimensionName()) match {
+            case Some(x) => {
+              val candidateBrdvs = x.map(brdvName => brdvList.find(_.name == brdvName)).filter(_.isDefined).map(_.get)
+              val observation = Observation(candidateBrdvs)
+              branchVertices = branchVertices + observation
+              branchEdges = branchEdges + DirectedEdge(measurementDimension, observation)
+              candidateBrdvs.foreach(brdv => {
+                branchVertices = branchVertices + brdv
+                branchEdges = branchEdges + DirectedEdge(observation, brdv)
+                branchStructure.brdvToAttributes.get(brdv.name).foreach(attSet => attSet.foreach(attStr => {
+                  val att = Attribute(attStr)
+                  branchVertices = branchVertices + att
+                  branchEdges = branchEdges + DirectedEdge(brdv, att)
+                }))
+              })
+            }
+            case _ =>
           }
-          case _ =>
-        }
-      })
+        })
+      }
     }
-    val r = new DMN4DQTree(branchVertices, branchEdges, Some(this.structure))
+
+
+    val r = new DMN4DQTree(branchVertices, branchEdges, Some(this.branchStructure))
     r
   }
 
