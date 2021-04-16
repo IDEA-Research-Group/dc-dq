@@ -29,8 +29,9 @@ object Observation{
 
   def apply(id: String): Observation = new Observation(id)
   def apply(): Observation = new Observation(randomUUID().toString)
-  def apply(brdvs: List[BRDV]): Observation = new Observation(
-    s"Observation[${brdvs.sorted.mkString(":")}]".hashCode.toHexString
+  def apply(brdvs: Set[BRDV]): Observation = new Observation(
+    //s"Observation[${brdvs.mkString(":")}]".hashCode.toHexString
+    brdvs.hashCode.toHexString
   )
 
   def deserializeJson(jsObject: JsObject): Observation = new Observation(jsObject.value("id").as[String])

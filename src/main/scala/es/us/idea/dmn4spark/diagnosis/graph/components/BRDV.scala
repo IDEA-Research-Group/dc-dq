@@ -10,7 +10,7 @@ import scala.math.Ordered.orderingToOrdered
 class BRDV(name: String, value: String) extends Value(name, value, "string") with AndVertex
   with Ordered[BRDV] {
 
-  override def id(): String = s"BRDV[$name:$value]".hashCode.toHexString
+  override def id(): String = s"$name:$value".hashCode.toHexString
 
   override def getChildren(implicit tree: Tree): Set[Attribute] =
     super.getChildren.flatMap {
