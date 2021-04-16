@@ -1,8 +1,14 @@
 package es.us.idea.dmn4spark.diagnosis.graph
 
 import es.us.idea.dmn4spark.analysis.Utils
+import es.us.idea.dmn4spark.diagnosis.graph.adapters.JGraphtAdapter
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
+import org.jgrapht.graph.{DefaultEdge, SimpleDirectedGraph}
 import play.api.libs.json.{JsArray, JsObject, JsString}
+
+import scala.collection.JavaConverters.{seqAsJavaListConverter, setAsJavaSetConverter}
+
+
 
 class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable {
 
@@ -98,6 +104,11 @@ class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable
       "edges" -> JsArray(edges().toList.map(_.convert2json))
     ))
   }
+
+  def asJgraphT: SimpleDirectedGraph[Vertex, DefaultEdge] =
+    JGraphtAdapter.generateGraph(vertices().asJava, edges().asJava)
+
+  def dotRepresentation: String = JGraphtAdapter.basicGraphToDot(this.asJgraphT)
 
 }
 
