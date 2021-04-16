@@ -5,20 +5,23 @@ import es.us.idea.dmn4spark.analysis.extended.ExtendedDecisionDiagram
 import es.us.idea.dmn4spark.diagnosis.graph.adapters.JGraphtAdapter
 import es.us.idea.dmn4spark.diagnosis.graph.components.{Assessment, Attribute, BRDV, Decision, DimensionMeasurement, Measurement, Observation}
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
+import es.us.idea.dmn4spark.diagnosis.graph.structure.DMN4DQStructure
 import play.api.libs.json._
 
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.util.Try
 
-class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], measurementToBrdvOpt: Option[Map[String, List[String]]] = None)
+class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: Option[DMN4DQStructure] = None)
   extends Tree(vertices, edges) with Serializable {
 
-  lazy val measurementToBrdv: Map[String, List[String]] = {
-    measurementToBrdvOpt match {
+  lazy val structure: DMN4DQStructure = {
+    structureOpt match {
       case Some(map) => map
-      case _ => calculateBrdvDependencies()
+      case _ => inferStructure()
     }
   }
+
+  override def getRoots(): Set[Decision] = super.getRoots().filter(_.isInstanceOf[Decision]).map(_.asInstanceOf[Decision])
 
   private def calculateBrdvDependencies(): Map[String, List[String]] = {
     edges().map(edge => edge.target() match {
@@ -30,6 +33,56 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], measurementToB
     }).filter(_.isDefined).map(_.get).groupBy(_._1).map(x => (x._1, x._2.map(_._2).toList))
   }
 
+  private def inferStructure(): DMN4DQStructure = {
+    val dimensionsToBrdv = getDimensionMeasurements()
+      .map(dm => (dm.dimensionName(), dm.getChildren.flatMap(_.getChildren.map(_.name)))).toList.toMap
+    val brdvToAttribute = getBRDVs().map(brdv => (brdv.name, brdv.getChildren.map(_.name))).toList.toMap
+    DMN4DQStructure(dimensionsToBrdv, brdvToAttribute)
+  }
+
+  def getDimensionMeasurements(): Set[DimensionMeasurement] =
+    vertices().flatMap {
+      case x: DimensionMeasurement => Some(x)
+      case _ => None
+    }
+
+  def getBRDVs(): Set[BRDV] =
+    vertices().flatMap {
+      case x: BRDV => Some(x)
+      case _ => None
+    }
+
+  def getAttributes: Set[Attribute] =
+    vertices().flatMap {
+      case x: Attribute => Some(x)
+      case _ => None
+    }
+
+  def getObservations: Set[Observation] =
+    vertices().flatMap {
+      case x: Observation => Some(x)
+      case _ => None
+    }
+
+  def getMeasurements: Set[Measurement] =
+    vertices().flatMap {
+      case x: Measurement => Some(x)
+      case _ => None
+    }
+
+  def getAssessments: Set[Assessment] =
+    vertices().flatMap {
+      case x: Assessment => Some(x)
+      case _ => None
+    }
+
+  def getDecision: Set[Decision] =
+    vertices().flatMap {
+      case x: Decision => Some(x)
+      case _ => None
+    }
+
+  @deprecated
   def M(assessmentValue: String): Set[Measurement] = {
     edges.filter(edge => {
       edge.source() match {
@@ -43,11 +96,12 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], measurementToB
       }
     }).filter(_.isDefined).map(_.get)
   }
-
+  @deprecated
   def D(dimensionName: String): Set[DimensionMeasurement] = ???
+  @deprecated
   def O(dimensionName: String, measuredValue: String) = ???
 
-  //def O(dimensionMeasurement: DimensionMeasurement): List[Observation] = dimensionMeasurement.getChildren = ???
+  @deprecated
   def getEvidenceNamesOfDimensionMeasurement(dimensionMeasurement: DimensionMeasurement): Set[String] =
     dimensionMeasurement.getChildren.headOption match {
       case Some(observation: Observation) =>observation.getChildren.map {
@@ -116,19 +170,21 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], measurementToB
 
   // The map must represent a branch in a DMN4DQ branch
   def getBranch(map: Map[String, AnyRef]): DMN4DQTree = {
-    var assessmentList = List[Assessment]()
-    var dqmList = List[DimensionMeasurement]()
-    var brdvList = List[BRDV]()
+    var decisionList = Set[Decision]()
+    var assessmentList = Set[Assessment]()
+    var dqmList = Set[DimensionMeasurement]()
+    var brdvList = Set[BRDV]()
 
     var branchVertices = Set[Vertex]()
     var branchEdges = Set[DirectedEdge]()
 
     map.keys.foreach {
-      case dqa if dqa == "DQA" => assessmentList = assessmentList :+ Assessment(map(dqa).toString)
+      case dud if dud == "DUD" => decisionList = decisionList + Decision(map(dud).toString)
+      case dqa if dqa == "DQA" => assessmentList = assessmentList + Assessment(map(dqa).toString)
       case dqm if "DQM\\(.+\\)".r.pattern.matcher(dqm).matches() => {
-        dqmList = dqmList :+ DimensionMeasurement(dqm.replace("DQM(", "").replace(")", ""), map(dqm).toString)
+        dqmList = dqmList + DimensionMeasurement(dqm.replace("DQM(", "").replace(")", ""), map(dqm).toString)
       }
-      case br if "^BR.*".r.pattern.matcher(br).matches() => brdvList = brdvList :+ BRDV(br, map(br).toString)
+      case br if "^BR.*".r.pattern.matcher(br).matches() => brdvList = brdvList + BRDV(br, map(br).toString)
       case _ =>
     }
 
@@ -141,7 +197,7 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], measurementToB
       dqmList.foreach(measurementDimension => {
         branchVertices = branchVertices + measurementDimension
         branchEdges = branchEdges + DirectedEdge(measurement, measurementDimension)
-        measurementToBrdv.get(measurementDimension.dimensionName()) match {
+        structure.dimensionToBrdv.get(measurementDimension.dimensionName()) match {
           case Some(x) => {
             val candidateBrdvs = x.map(brdvName => brdvList.find(_.name == brdvName)).filter(_.isDefined).map(_.get)
             val observation = Observation(candidateBrdvs)
@@ -156,7 +212,7 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], measurementToB
         }
       })
     }
-    val r = new DMN4DQTree(branchVertices, branchEdges, Some(this.measurementToBrdv))
+    val r = new DMN4DQTree(branchVertices, branchEdges, Some(this.structure))
     r
   }
 
@@ -180,11 +236,13 @@ object DMN4DQTree{
       Try({
         val uMap = possibleVertex.value
         uMap("type").as[String] match {
+          case "Decision" => Decision.deserializeJson(possibleVertex)
           case "Assessment" => Assessment.deserializeJson(possibleVertex)
           case "Measurement" => Measurement.deserializeJson(possibleVertex)
           case "DimensionMeasurement" => DimensionMeasurement.deserializeJson(possibleVertex)
           case "Observation" => Observation.deserializeJson(possibleVertex)
           case "BRDV" => BRDV.deserializeJson(possibleVertex)
+          case "Attribute" => Attribute.deserializeJson(possibleVertex)
         }
       }).toOption
     }
@@ -265,7 +323,7 @@ object DMN4DQTree{
       assessmentCandidates.foreach(possibleAssessmentCandidate => {
         val assessmentValue = possibleAssessmentCandidate.value.clean()
         assessmentValuesAndRules.filter(_._1 == assessmentValue).foreach(assessmentCandidate => {
-          val measurementCandidates = assessmentCandidate._2
+          //val measurementCandidates = assessmentCandidate._2
           val assessment = Assessment(assessmentValue) // Instantiate vertex
           vertices = vertices + assessment // Add assessment to the list of vertices
           edges = edges + DirectedEdge(dud, assessment)
@@ -287,7 +345,7 @@ object DMN4DQTree{
                 val dimensionMeasurement = DimensionMeasurement(dimensionName, measuredValue)
                 vertices = vertices + dimensionMeasurement
                 dimensionMeasurement
-              })
+              }).toSet
 
               val measurement = Measurement(dimensionMeasurements)
               vertices = vertices + measurement
@@ -301,7 +359,7 @@ object DMN4DQTree{
                 observationCandidates.foreach(observationCandidate => {
 
                   val brdvCandidates = observationCandidate._2 // obtenemos las brdvs
-                  val brdvs: List[BRDV] = brdvCandidates.map(brdvCandidate => {
+                  val brdvs: Set[BRDV] = brdvCandidates.map(brdvCandidate => {
                     val name = brdvCandidate.name.clean()
                     val value = brdvCandidate.value.clean()
                     val brdv = BRDV(name, value)
@@ -316,7 +374,7 @@ object DMN4DQTree{
                     })
 
                     brdv
-                  })
+                  }).toSet
 
                   val observation = Observation(brdvs)
                   vertices = vertices + observation
@@ -342,11 +400,13 @@ object DMN4DQTree{
 
 
     // extract relationships from brdvs names to dimension measurement name
-    val t = dqm.flatMap(x =>
-      x.conditions().map(_.name).map(y => (y, x.outputs().map(_.name))).flatMap(y => y._2.map(z => (y._1, z)))
-    ).distinct.groupBy(_._2).map(x => (x._1, x._2.map(_._1))).toMap
+    // TODO temporalmente desactivado. brdvsToAttributes no es trivial de inferir (asegurarse de que las leafsTables empiezan por BR...)
+    // val measurementsToBrdv = dqm.flatMap(x =>
+    //   x.conditions().map(_.name).map(y => (y, x.outputs().map(_.name))).flatMap(y => y._2.map(z => (y._1, z)))
+    // ).distinct.groupBy(_._2).map(x => (x._1, x._2.map(_._1).toSet )).toMap
+    // val brdvsToAttributes =
 
-    new DMN4DQTree(vertices, edges, Some(t))
+    new DMN4DQTree(vertices, edges, None)
   }
 
   object implicits {
