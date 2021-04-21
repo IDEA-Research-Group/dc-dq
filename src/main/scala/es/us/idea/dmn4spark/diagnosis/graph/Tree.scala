@@ -21,7 +21,7 @@ class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable
 
   def verticesAndEdges(): (Set[Vertex], Set[DirectedEdge]) = (vertices(), edges())
 
-  def getChildren(vertex: Vertex): Set[_ <: Vertex] =
+  def getChildren(vertex: Vertex): Set[Vertex] =
     edges().filter(_.source() == vertex).map(_.target())
 
   def getParents(vertex: Vertex): Set[Vertex] =
@@ -49,6 +49,9 @@ class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable
   def isLeaf(vertex: Vertex): Boolean =
     !edges.exists(_.source() == vertex)
 
+  def isRoot(vertex: Vertex): Boolean =
+    !edges.exists(_.target() == vertex)
+
   def getAllDescendants(vertex: Vertex): Set[Vertex] = {
     val children = vertex.getChildren
     // get children of children
@@ -56,18 +59,37 @@ class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable
     children ++ children.flatMap(getAllDescendants)
   }
 
-  def findAllBranches(vertex: Vertex): List[Tree] = {
-    def recursive(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[Tree] = {
-      var toReturn: List[Tree] = List()
-      v.getChildren.foreach(child =>{
-        if(child.isLeaf) toReturn = toReturn :+ Tree(visited + child, visitedEdges + DirectedEdge(v, child))
-        else toReturn = toReturn ++ recursive(child, visited+child, visitedEdges + DirectedEdge(v, child))
-      })
-      toReturn
-    }
-    recursive(vertex, Set(vertex), Set())
+//  def findAllBranches(vertex: Vertex): List[Tree] = {
+//    def recursive(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[Tree] = {
+//      var toReturn: List[Tree] = List()
+//      v.getChildren.foreach(child =>{
+//        if(child.isLeaf) toReturn = toReturn :+ Tree(visited + child, visitedEdges + DirectedEdge(v, child))
+//        else toReturn = toReturn ++ recursive(child, visited+child, visitedEdges + DirectedEdge(v, child))
+//      })
+//      toReturn
+//    }
+//    recursive(vertex, Set(vertex), Set())
+//  }
+
+  def allPathsFromVertex(
+                          from: Vertex,
+                          baseCase: Vertex => Boolean = this.isLeaf,
+                          nextGeneration: Vertex => Set[Vertex] = this.getChildren,
+                          visited: List[Vertex] = List()
+                        ): List[List[Vertex]] = {
+    var result: List[List[Vertex]] = List()
+    nextGeneration(from).foreach(next => {
+      if(baseCase(next)) result = result :+ (visited :+ next)
+      else result = result ++ allPathsFromVertex(next, baseCase, nextGeneration, visited :+ next)
+    })
+    result
   }
 
+  def allPathsToVertex (
+                          to: Vertex,
+                          baseCase: Vertex => Boolean = this.isRoot,
+                          visited: List[Vertex] = List()
+                        ): List[List[Vertex]] = allPathsFromVertex(to, baseCase, this.getParents, visited)
 
 
   def union(trees: List[Tree]): Tree = {
