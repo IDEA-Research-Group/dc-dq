@@ -11,6 +11,7 @@ trait Vertex extends Serializable {
   def getParents(implicit tree: Tree): Set[_ <: Vertex] = tree.getParents(this)
   def getAllDescendants(implicit tree: Tree): Set[Vertex] = tree.getAllDescendants(this)
   def isLeaf(implicit tree: Tree): Boolean = tree.isLeaf(this)
+  def isRoot(implicit tree: Tree): Boolean = tree.isRoot(this)
 
   def canEqual(a: Any): Boolean = a.isInstanceOf[Vertex]
 
