@@ -33,7 +33,10 @@ class NewDiagnosis(targetBranch: DMN4DQTree, observedBranch: DMN4DQTree) {
       observedBrdvs.find(_.name == targetBrdv.name) match {
         case Some(observedBrdv) => {
           if(observedBrdv.value != targetBrdv.value){
-            costModel.brdvCosts(targetBrdv.name).find(c => c.observedValue == observedBrdv.value && c.targetValue == targetBrdv.value).map(_.cost).getOrElse(costModel.default)
+            costModel.brdvCosts.get(targetBrdv.name) match {
+              case Some(x) => x.find(c => c.observedValue == observedBrdv.value && c.targetValue == targetBrdv.value).map(_.cost).getOrElse(costModel.default)
+              case _ => costModel.default
+            }
           } else 0.0
         }
         case _ => Double.MaxValue
