@@ -5,8 +5,10 @@ import es.us.idea.dmn4spark.analysis.extended.ExtendedDecisionDiagram
 import es.us.idea.dmn4spark.diagnosis.graph.components.{Assessment, Attribute, BRDV, Decision, DimensionMeasurement, Measurement, Observation}
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
 import es.us.idea.dmn4spark.diagnosis.graph.structure.DMN4DQStructure
+import es.us.idea.dmn4spark.diagnosis.utils.{RankCoefficientSort, SortableItem}
 import play.api.libs.json._
 
+import scala.reflect.ClassTag
 import scala.util.Try
 
 class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: Option[DMN4DQStructure] = None)
@@ -43,6 +45,9 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
       case x: DimensionMeasurement => Some(x)
       case _ => None
     }
+
+  def getBRDVs(dimensionName: String): Set[BRDV] =
+    getDimensionMeasurements().filter(_.dimensionName() == dimensionName).flatMap(_.getChildren.flatMap(_.getChildren))
 
   def getBRDVs(): Set[BRDV] =
     vertices().flatMap {
@@ -99,6 +104,7 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
   @deprecated
   def O(dimensionName: String, measuredValue: String) = ???
 
+
   @deprecated
   def getEvidenceNamesOfDimensionMeasurement(dimensionMeasurement: DimensionMeasurement): Set[String] =
     dimensionMeasurement.getChildren.headOption match {
@@ -110,7 +116,7 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
     }
 
 
-  override def findAllBranches(vertex: Vertex): List[DMN4DQTree] = {
+  def findAllBranches(vertex: Vertex): List[DMN4DQTree] = {
 
     def recursive(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[DMN4DQTree] = {
       var toReturn: List[DMN4DQTree] = List()
@@ -227,6 +233,61 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
     val r = new DMN4DQTree(branchVertices, branchEdges, Some(this.branchStructure))
     r
   }
+
+  def dimensionMeasurementRanking(assessmentRanking: List[Assessment]): Map[String, List[(Int, DimensionMeasurement)]] = {
+    def baseCaseAssessment(v: Vertex): Boolean = v.isInstanceOf[Assessment]
+
+    val assessmentRankingWithIndex = assessmentRanking.zipWithIndex.map(x => (x._1, assessmentRanking.size - x._2)).toMap
+
+    getDimensionMeasurements().groupBy(_.dimensionName()).map(x => {
+      val dimensionName = x._1
+      val dimensionValues = x._2
+      // Next, we process the values related to this dimension
+      val dimensionValuesAndRankings = dimensionValues.flatMap(dv => {
+        val allPathsToDimensionValue = allPathsToVertex(dv, baseCase = baseCaseAssessment)
+
+        // For each assessment in the ranking, calculate a coefficient
+        assessmentRankingWithIndex.map(ar => {
+          val assessment = ar._1
+          val assessmentRanking = ar._2
+          (assessmentRanking, dv, allPathsToDimensionValue.count(_.contains(assessment)).toDouble/allPathsToDimensionValue.size)
+        })
+      }).toList
+      val s = RankCoefficientSort(dimensionValuesAndRankings.map(x => SortableItem(x._2, x._1, x._3))).sort()
+      (dimensionName, s)
+    })
+  }
+
+  def brdvValuesRanking(assessmentRanking: List[Assessment]): Map[String, List[(Int, BRDV)]] = {
+    def baseCaseDimensionMeasurement(v: Vertex): Boolean = v.isInstanceOf[DimensionMeasurement]
+
+    val dmr = dimensionMeasurementRanking(assessmentRanking)
+
+    dmr.flatMap(dmTuple => {
+      // We're inside of a dimension
+      val dimensionName = dmTuple._1
+      val dmRanking = dmTuple._2
+      val dmRankingWithIndex = dmRanking.zipWithIndex.map(x => (x._1._2, dmRanking.size - x._2)).toMap
+
+      val pathsToBrdv = getBRDVs(dimensionName).map(brdv => {
+        (brdv, allPathsToVertex(brdv, baseCase = baseCaseDimensionMeasurement))
+      }).toList
+
+      dmRankingWithIndex.flatMap(dmValue => {
+        // Calculate coefficients for this value
+        pathsToBrdv.map(ptbrdv =>
+          (dmValue._2, ptbrdv._1, ptbrdv._2.count(_.contains(dmValue._1)).toDouble/ptbrdv._2.size)
+        )
+      }).groupBy(_._2.name).map(brdvNameCoefficient => {
+        // Estamos procesando cada BRDV name
+        val brdvName = brdvNameCoefficient._1
+        val rankingBrdvAndCoeff = brdvNameCoefficient._2.toList
+        val s = RankCoefficientSort(rankingBrdvAndCoeff.map(x => SortableItem(x._2, x._1, x._3))).sort()
+        (brdvName, s)
+      } )
+    })
+  }
+
 
   override def toString: String = {
     val assessment = vertices().filter(_.isInstanceOf[Assessment])
