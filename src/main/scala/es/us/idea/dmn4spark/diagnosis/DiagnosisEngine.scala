@@ -1,5 +1,6 @@
 package es.us.idea.dmn4spark.diagnosis
 
+import es.us.idea.dmn4spark.diagnosis.cost.CostModel
 import es.us.idea.dmn4spark.diagnosis.graph.DMN4DQTree
 import es.us.idea.dmn4spark.diagnosis.graph.adapters.JGraphtAdapter
 import es.us.idea.dmn4spark.spark.{SparkDataConversor, Utils}
@@ -34,10 +35,10 @@ class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializabl
     applyUDF(func, newColumns)
   }
 
-  def minimumDeviationToTarget(targetBranches: List[DMN4DQTree], criteria: Map[String, String]): DataFrame = {
+  def minimumCostToTarget(targetBranches: List[DMN4DQTree], criteria: Map[String, String], costModel: CostModel): DataFrame = {
     assert(df.columns.contains("Branch"))
 
-    val newColumns = Seq("TargetBranch", "TargetBranchId", "deviation", "targetBranchDotRepresentation")
+    val newColumns = Seq("TargetBranch", "TargetBranchId", "cost", "targetBranchDotRepresentation")
 
     val func = new UDF1[Row, Row] {
       override def call(t1: Row): Row = {
@@ -45,8 +46,8 @@ class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializabl
 
         val result = if(criteria.map(x => map(x._1) == x._2).forall(_ == true)) {
           val branch = DMN4DQTree.deserializeJson(Json.parse(map("Branch").toString).as[JsObject])
-          val selectedDiagnosis = targetBranches.map(t => (t, Diagnosis(t, branch))).minBy(x => x._2.deviation())
-          Seq(selectedDiagnosis._1.convert2json.toString, selectedDiagnosis._1.getId, selectedDiagnosis._2.deviation().toString,
+          val selectedDiagnosis = targetBranches.map(t => (t, new NewDiagnosis(t, branch).getCost(costModel))).minBy(x => x._2)
+          Seq(selectedDiagnosis._1.convert2json.toString, selectedDiagnosis._1.getId, selectedDiagnosis._2.toString,
             JGraphtAdapter.printDot(selectedDiagnosis._1.vertices().asJava, selectedDiagnosis._1.edges().asJava))
         } else Seq("", "", "0", "")
         // call function which returns tree object plus id
