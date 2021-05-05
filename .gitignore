@@ -25,6 +25,10 @@ target/
 .worksheet
 #src/main/scala/es/us/idea/adt/benchmark/*
 input/*
+input
 models/*
+models
 src/main/scala/es/us/idea/dmn4spark/junk/*
+src/main/scala/es/us/idea/dmn4spark/junk
 output/*
+output
