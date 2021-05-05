@@ -1,6 +1,6 @@
 package es.us.idea.dmn4spark.diagnosis
 
-import es.us.idea.dmn4spark.diagnosis.cost.CostModel
+import es.us.idea.dmn4spark.diagnosis.cost.OldCostModel
 import es.us.idea.dmn4spark.diagnosis.graph.DMN4DQTree
 import es.us.idea.dmn4spark.diagnosis.graph.adapters.JGraphtAdapter
 import es.us.idea.dmn4spark.spark.{SparkDataConversor, Utils}
@@ -35,7 +35,7 @@ class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializabl
     applyUDF(func, newColumns)
   }
 
-  def minimumCostToTarget(targetBranches: List[DMN4DQTree], criteria: Map[String, String], costModel: CostModel): DataFrame = {
+  def minimumCostToTarget(targetBranches: List[DMN4DQTree], criteria: Map[String, String], costModel: OldCostModel): DataFrame = {
     assert(df.columns.contains("Branch"))
 
     val newColumns = Seq("TargetBranch", "TargetBranchId", "cost", "targetBranchDotRepresentation")
