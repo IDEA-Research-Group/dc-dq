@@ -1,6 +1,6 @@
 package es.us.idea.dmn4spark.diagnosis
 
-import es.us.idea.dmn4spark.diagnosis.cost.{CostModel, ObservedToTargetCost}
+import es.us.idea.dmn4spark.diagnosis.cost.{OldCostModel, OldObservedToTargetCost}
 import es.us.idea.dmn4spark.diagnosis.graph.DMN4DQTree
 import es.us.idea.dmn4spark.diagnosis.graph.components.BRDV
 
@@ -10,7 +10,7 @@ class NewDiagnosis(targetBranch: DMN4DQTree, observedBranch: DMN4DQTree) {
     dmn4dqtree.vertices().filter(_.isInstanceOf[BRDV]).map(_.asInstanceOf[BRDV])
   }
 
-  def getBRDVDeviation(): (Double, Map[String, ObservedToTargetCost]) = {
+  def getBRDVDeviation(): (Double, Map[String, OldObservedToTargetCost]) = {
     val targetBrdvs = getBRDVS(targetBranch)
     val observedBrdvs = getBRDVS(observedBranch)
 
@@ -25,7 +25,7 @@ class NewDiagnosis(targetBranch: DMN4DQTree, observedBranch: DMN4DQTree) {
     ???
   }
 
-  def getCost(costModel: CostModel): Double = {
+  def getCost(costModel: OldCostModel): Double = {
     val targetBrdvs = getBRDVS(targetBranch)
     val observedBrdvs = getBRDVS(observedBranch)
 
