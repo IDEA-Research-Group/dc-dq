@@ -11,12 +11,13 @@ import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
 object MainAnalysis {
   def main(args: Array[String]): Unit = {
+    //val path = "models/dmn4dq.dmn"
     val path = "models/basic-diagram-3.dmn"
 
     val extended = ExtendedDecisionDiagram(path, true)
 
     extended.extendedDMNTables().foreach(extendedDMNTable => {
-      println(s"------------- Extended rules for table ${extendedDMNTable.dmnTableSummary().name()} ------------")
+      println(s"------------- Extended rules for table ${extendedDMNTable.dmnTableSummary().name()} w/ inputs ${extendedDMNTable.dmnTableSummary().inputAttributes()} ------------")
       extendedDMNTable.extendedRules().foreach(extendedRule => {
         println(extendedRule)
       })
