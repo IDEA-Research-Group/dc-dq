@@ -6,8 +6,10 @@ import es.us.idea.dmn4spark.diagnosis.graph.components.{Assessment, Attribute, B
 import es.us.idea.dmn4spark.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
 import es.us.idea.dmn4spark.diagnosis.graph.structure.DMN4DQStructure
 import es.us.idea.dmn4spark.diagnosis.utils.{RankCoefficientSort, SortableItem}
+import org.camunda.bpm.dmn.feel.impl.FeelEngine
 import play.api.libs.json._
 
+import java.io.InputStream
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -360,6 +362,10 @@ object DMN4DQTree{
   def apply(vertices: Set[Vertex], edges: Set[DirectedEdge]): DMN4DQTree = new DMN4DQTree(vertices, edges)
 
   def apply(path: String): DMN4DQTree = apply(ExtendedDecisionDiagram(path, true))
+
+  def apply(is: InputStream): DMN4DQTree = apply(ExtendedDecisionDiagram(is, true, None))
+
+  def apply(is: InputStream, feelEngine: FeelEngine): DMN4DQTree = apply(ExtendedDecisionDiagram(is, true, Some(feelEngine)))
 
   def apply(extendedDecisionDiagram: ExtendedDecisionDiagram): DMN4DQTree = {
     import DMNAnalysisHelpers._

@@ -1,7 +1,6 @@
 package es.us.idea.dmn4spark.analysis
 
-import java.io.FileInputStream
-
+import java.io.{FileInputStream, InputStream}
 import es.us.idea.dmn4spark.analysis
 import es.us.idea.dmn4spark.dmn.DMNExecutor
 import es.us.idea.dmn4spark.dmn.engine.SafeCamundaFeelEngineFactory
@@ -20,11 +19,16 @@ class DecisionDiagram(dmnTablesSummaries: List[DMNTable]) {
 object DecisionDiagram {
 
   def apply(dmnModelPath: String): DecisionDiagram = {
-    val dmnExecutor = new DMNExecutor(IOUtils.toByteArray(new FileInputStream(dmnModelPath)))
+    apply(new FileInputStream(dmnModelPath))
+  }
+
+  def apply(is: InputStream): DecisionDiagram = {
+    val dmnExecutor = new DMNExecutor(IOUtils.toByteArray(is))
     val modelInstasnce = dmnExecutor.dmnModelInstance
     val dmnEngine = dmnExecutor.dmnEngine
     val graph = dmnEngine.parseDecisionRequirementsGraph(modelInstasnce)
     new DecisionDiagram(graph.getDecisions.asScala.map(decision => DMNTable(decision)).toList)
+
   }
 
 }
