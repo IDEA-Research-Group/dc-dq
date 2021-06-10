@@ -28,7 +28,7 @@ input/*
 input
 models/*
 models
-src/main/scala/es/us/idea/dmn4spark/junk/*
-src/main/scala/es/us/idea/dmn4spark/junk
+src/main/scala/es/us/idea/dcdq/junk/*
+src/main/scala/es/us/idea/dcdq/junk
 output/*
 output
