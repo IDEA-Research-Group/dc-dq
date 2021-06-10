@@ -13,6 +13,27 @@ import scala.collection.JavaConverters._
 
 class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializable {
 
+  def profiles(): DataFrame = {
+    // we'll add two columns: (1) tree (2) tree id
+    val newColumns = Seq("BranchId")
+
+    val func = new UDF1[Row, Row] {
+      override def call(t1: Row): Row = {
+        val map = SparkDataConversor.spark2javamap(t1).asScala.toMap
+        // call function which returns tree object plus id
+        val branch = dmn4dqTree.getBranch(map)
+        val branchJson = branch.convert2json.toString()
+        val branchId = branch.getId
+        val result = {
+          Seq(branch.getId)
+        }
+
+        Row.apply(result: _*)
+      }
+    }
+    applyUDF(func, newColumns)
+  }
+
   def branches(dotRepresentation: Boolean = false): DataFrame = {
 
     // we'll add two columns: (1) tree (2) tree id
