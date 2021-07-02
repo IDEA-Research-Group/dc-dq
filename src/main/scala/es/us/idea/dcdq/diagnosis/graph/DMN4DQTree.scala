@@ -23,6 +23,8 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
     }
   }
 
+  def structureOpt(): Option[DMN4DQStructure] = structureOpt
+
   override def getRoots(): Set[Decision] = super.getRoots().filter(_.isInstanceOf[Decision]).map(_.asInstanceOf[Decision])
 
   private def calculateBrdvDependencies(): Map[String, List[String]] = {
@@ -118,45 +120,9 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
     }
 
 
-  def findAllBranches(vertex: Vertex): List[DMN4DQTree] = {
+  override def findAllBranches(vertex: Vertex): List[UsabilityProfile] =
+    super.findAllBranches(vertex).map(t => UsabilityProfile(t))
 
-    def recursive(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[DMN4DQTree] = {
-      var toReturn: List[DMN4DQTree] = List()
-
-      v.getChildren.foreach(child =>{
-        if(child.isLeaf) toReturn = toReturn :+ DMN4DQTree(visited + child, visitedEdges + DirectedEdge(v, child))
-        else {
-          child match {
-            case andVertex: AndVertex => toReturn = toReturn ++ recursiveAnd(andVertex, visited+andVertex, visitedEdges + DirectedEdge(v, andVertex))
-            case _ => toReturn = toReturn ++ recursive(child, visited+child, visitedEdges + DirectedEdge(v, child))
-          }
-        }
-      })
-      toReturn
-    }
-
-    def recursiveAnd(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[DMN4DQTree] = {
-      var andVerticesBranches: List[(Vertex, DMN4DQTree)] = List()
-
-      v.getChildren.foreach(child => {
-        if(child.isLeaf) andVerticesBranches = andVerticesBranches :+ (child, DMN4DQTree(visited + child, visitedEdges + DirectedEdge(v, child)))
-        else {
-          child match {
-            case andVertex: AndVertex =>
-              andVerticesBranches = andVerticesBranches ++
-                recursiveAnd(andVertex, visited + andVertex, visitedEdges + DirectedEdge(v, andVertex)).map(x => (andVertex, x))
-            case _ =>
-              andVerticesBranches = andVerticesBranches ++
-                recursive(child, visited + child, visitedEdges + DirectedEdge(v, child)).map(x => (child, x))
-          }
-        }
-      })
-
-      val groupedBranches = andVerticesBranches.groupBy(_._1).map(x => x._2.map(_._2)).toList
-      Utils.combinations(groupedBranches).map(el => union(el))
-    }
-    recursive(vertex, Set(vertex), Set())
-  }
 
   def union(trees: List[DMN4DQTree]): DMN4DQTree = {
     val (vertices, edges) = super.union(trees).verticesAndEdges()

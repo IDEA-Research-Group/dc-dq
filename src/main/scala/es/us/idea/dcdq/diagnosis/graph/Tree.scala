@@ -71,6 +71,48 @@ class Tree(vertices: Set[Vertex], edges: Set[DirectedEdge]) extends Serializable
 //    recursive(vertex, Set(vertex), Set())
 //  }
 
+
+  def findAllBranches(vertex: Vertex): List[Tree] = {
+
+    def recursive(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[Tree] = {
+      var toReturn: List[Tree] = List()
+
+      v.getChildren.foreach(child =>{
+        if(child.isLeaf) toReturn = toReturn :+ Tree(visited + child, visitedEdges + DirectedEdge(v, child))
+        else {
+          child match {
+            case andVertex: AndVertex => toReturn = toReturn ++ recursiveAnd(andVertex, visited+andVertex, visitedEdges + DirectedEdge(v, andVertex))
+            case _ => toReturn = toReturn ++ recursive(child, visited+child, visitedEdges + DirectedEdge(v, child))
+          }
+        }
+      })
+      toReturn
+    }
+
+    def recursiveAnd(v: Vertex, visited: Set[Vertex], visitedEdges: Set[DirectedEdge]): List[Tree] = {
+      var andVerticesBranches: List[(Vertex, Tree)] = List()
+
+      v.getChildren.foreach(child => {
+        if(child.isLeaf) andVerticesBranches = andVerticesBranches :+ (child, Tree(visited + child, visitedEdges + DirectedEdge(v, child)))
+        else {
+          child match {
+            case andVertex: AndVertex =>
+              andVerticesBranches = andVerticesBranches ++
+                recursiveAnd(andVertex, visited + andVertex, visitedEdges + DirectedEdge(v, andVertex)).map(x => (andVertex, x))
+            case _ =>
+              andVerticesBranches = andVerticesBranches ++
+                recursive(child, visited + child, visitedEdges + DirectedEdge(v, child)).map(x => (child, x))
+          }
+        }
+      })
+
+      val groupedBranches = andVerticesBranches.groupBy(_._1).map(x => x._2.map(_._2)).toList
+      Utils.combinations(groupedBranches).map(el => union(el))
+    }
+    recursive(vertex, Set(vertex), Set())
+  }
+
+
   def allPathsFromVertex(
                           from: Vertex,
                           baseCase: Vertex => Boolean = this.isLeaf,
