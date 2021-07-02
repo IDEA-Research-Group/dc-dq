@@ -48,6 +48,13 @@
             <version>3.0.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-mllib -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_2.12</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.camunda.bpm.extension.feel.scala/feel-engine -->
         <dependency>
             <groupId>org.camunda.bpm.extension.feel.scala</groupId>
@@ -99,6 +106,12 @@
             <groupId>org.mongodb.spark</groupId>
             <artifactId>mongo-spark-connector_2.12</artifactId>
             <version>3.0.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.choco-solver/choco-solver -->
+        <dependency>
+            <groupId>org.choco-solver</groupId>
+            <artifactId>choco-solver</artifactId>
+            <version>4.10.6</version>
         </dependency>
 
     </dependencies>
