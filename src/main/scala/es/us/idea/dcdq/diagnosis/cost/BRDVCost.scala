@@ -2,7 +2,7 @@ package es.us.idea.dcdq.diagnosis.cost
 
 import play.api.libs.json.{Json, OFormat}
 
-case class BRDVCost(name: String, default: Option[Double], costs: Seq[ObservedToTargetCost]) {
+case class BRDVCost(name: String, costs: Seq[ObservedToTargetCost], default: Int, single: Boolean = true) {
   def toJsonString(): String = {
     Json.stringify(Json.toJson(this))
   }

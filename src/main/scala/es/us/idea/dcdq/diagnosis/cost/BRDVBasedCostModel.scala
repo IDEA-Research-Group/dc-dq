@@ -20,7 +20,7 @@ object BRDVBasedCostModel {
     BRDVBasedCostModel(default = 1.0, brdvCosts = r.toSeq.map( x => {
       BRDVCost(
         name = x._1,
-        default = None,
+        default = 1,
         costs = {
           val ranksAndValues = x._2.groupBy(_._1).mapValues(_.map(_._2))
           val ranks = ranksAndValues.keys.toList.distinct.sorted
@@ -32,7 +32,7 @@ object BRDVBasedCostModel {
               val brdvsUpperRank = ranksAndValues(upperRank)
               brdvsCurrentRank.foreach(currentBrdv => {
                 brdvsUpperRank.foreach(upperBrdv => {
-                  result = result :+ ObservedToTargetCost(currentBrdv.value, upperBrdv.value, cost = 1.0)
+                  result = result :+ ObservedToTargetCost(currentBrdv.value, upperBrdv.value, cost = 1)
                 })
               })
               upperRank = upperRank + 1

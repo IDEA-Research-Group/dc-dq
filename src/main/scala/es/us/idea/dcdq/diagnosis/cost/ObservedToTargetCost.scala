@@ -2,7 +2,7 @@ package es.us.idea.dcdq.diagnosis.cost
 
 import play.api.libs.json.{Json, OFormat}
 
-case class ObservedToTargetCost(observedValue: String, targetValue: String, cost: Double) {
+case class ObservedToTargetCost(observedValue: String, targetValue: String, cost: Int, single: Boolean = true) {
 
 
   def toJsonString(): String = {

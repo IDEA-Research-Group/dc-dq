@@ -139,7 +139,7 @@ public class COPMultiUPFinal {
         model.setObjective(Model.MINIMIZE, totalCost);
 
         Solver solver = model.getSolver();
-        solver.printStatistics();
+        //solver.printStatistics();
         Solution solution = solver.findOptimalSolution(totalCost, Model.MINIMIZE);
 
         //Solution solutions = solver.findAllOptimalSolutions(totalCost, Model.MINIMIZE);
