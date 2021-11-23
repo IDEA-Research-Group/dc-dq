@@ -3,7 +3,7 @@ package es.us.idea.dcdq.diagnosis
 import es.us.idea.dcdq.diagnosis.cost.OldCostModel
 import es.us.idea.dcdq.diagnosis.graph.DMN4DQTree
 import es.us.idea.dcdq.diagnosis.graph.adapters.JGraphtAdapter
-import es.us.idea.dcdq.spark.{SparkDataConversor, Utils}
+import es.us.idea.dcdq.spark.{SparkRowToJavaTypesConversor, Utils}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions.{array, col, explode, struct, udf}
 import org.apache.spark.sql.api.java.UDF1
@@ -19,7 +19,7 @@ class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializabl
 
     val func = new UDF1[Row, Row] {
       override def call(t1: Row): Row = {
-        val map = SparkDataConversor.spark2javamap(t1).asScala.toMap
+        val map = SparkRowToJavaTypesConversor.spark2javamap(t1).asScala.toMap
         // call function which returns tree object plus id
         val branch = dmn4dqTree.getBranch(map)
         val branchJson = branch.convert2json.toString()
@@ -41,7 +41,7 @@ class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializabl
 
     val func = new UDF1[Row, Row] {
       override def call(t1: Row): Row = {
-        val map = SparkDataConversor.spark2javamap(t1).asScala.toMap
+        val map = SparkRowToJavaTypesConversor.spark2javamap(t1).asScala.toMap
         // call function which returns tree object plus id
         val branch = dmn4dqTree.getBranch(map)
         val result = {
@@ -63,7 +63,7 @@ class DiagnosisEngine(df: DataFrame, dmn4dqTree: DMN4DQTree) extends Serializabl
 
     val func = new UDF1[Row, Row] {
       override def call(t1: Row): Row = {
-        val map = SparkDataConversor.spark2javamap(t1).asScala.toMap
+        val map = SparkRowToJavaTypesConversor.spark2javamap(t1).asScala.toMap
 
         val result = if(criteria.map(x => map(x._1) == x._2).forall(_ == true)) {
           val branch = DMN4DQTree.deserializeJson(Json.parse(map("Branch").toString).as[JsObject])

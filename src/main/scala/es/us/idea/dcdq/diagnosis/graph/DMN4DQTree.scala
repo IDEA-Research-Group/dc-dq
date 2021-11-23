@@ -6,6 +6,7 @@ import es.us.idea.dcdq.diagnosis.graph.components.{Assessment, Attribute, BRDV, 
 import es.us.idea.dcdq.diagnosis.graph.components.basic.{AndVertex, DirectedEdge, Vertex}
 import es.us.idea.dcdq.diagnosis.graph.structure.DMN4DQStructure
 import es.us.idea.dcdq.diagnosis.utils.{RankCoefficientSort, SortableItem}
+import es.us.idea.dmn4spark.dmn.executor.DMNExecutor
 import org.camunda.bpm.dmn.feel.impl.FeelEngine
 import play.api.libs.json._
 
@@ -329,9 +330,13 @@ object DMN4DQTree{
 
   def apply(path: String): DMN4DQTree = apply(ExtendedDecisionDiagram(path, true))
 
-  def apply(is: InputStream): DMN4DQTree = apply(ExtendedDecisionDiagram(is, true, None))
+  def apply(arrBytes: Array[Byte]): DMN4DQTree = apply(ExtendedDecisionDiagram(arrBytes, true, None))
 
-  def apply(is: InputStream, feelEngine: FeelEngine): DMN4DQTree = apply(ExtendedDecisionDiagram(is, true, Some(feelEngine)))
+  def apply(dmnExecutor: DMNExecutor): DMN4DQTree = apply(ExtendedDecisionDiagram(dmnExecutor, true, None))
+
+  def apply(arrBytes: Array[Byte], feelEngine: FeelEngine): DMN4DQTree = apply(ExtendedDecisionDiagram(arrBytes, true, Some(feelEngine)))
+
+  def apply(dmnExecutor: DMNExecutor, feelEngine: FeelEngine): DMN4DQTree = apply(ExtendedDecisionDiagram(dmnExecutor, true, Some(feelEngine)))
 
   def apply(extendedDecisionDiagram: ExtendedDecisionDiagram): DMN4DQTree = {
     import DMNAnalysisHelpers._

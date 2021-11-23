@@ -1,9 +1,9 @@
 package es.us.idea.dcdq.analysis
 
-import java.io.FileInputStream
+import es.us.idea.dmn4spark.dmn.engine.SafeCamundaFeelEngineFactory
+import es.us.idea.dmn4spark.dmn.executor.DMNExecutor
 
-import es.us.idea.dcdq.dmn.DMNExecutor
-import es.us.idea.dcdq.dmn.engine.SafeCamundaFeelEngineFactory
+import java.io.FileInputStream
 import org.apache.commons.io.IOUtils
 import org.camunda.bpm.dmn.engine.impl.DmnDecisionTableImpl
 import org.camunda.bpm.dmn.engine.impl.spi.`type`.DmnTypeDefinition

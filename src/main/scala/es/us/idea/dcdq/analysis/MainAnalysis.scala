@@ -1,10 +1,7 @@
 package es.us.idea.dcdq.analysis
 
 import java.io.FileInputStream
-
 import es.us.idea.dcdq.analysis.extended.ExtendedDecisionDiagram
-import es.us.idea.dcdq.dmn.DMNExecutor
-import es.us.idea.dcdq.dmn.engine.SafeCamundaFeelEngineFactory
 import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
