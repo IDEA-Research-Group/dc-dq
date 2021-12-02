@@ -9,7 +9,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-object SparkDataConversor {
+object SparkRowToJavaTypesConversor {
 
   def spark2javamap(row: Row, dsSchema: Option[org.apache.spark.sql.types.StructType] = None): java.util.HashMap[String, AnyRef] = {
 
