@@ -1,0 +1,10 @@
+# Example Streaming-config.yaml file
+bootstrapServers:
+  - "192.168.20.140:29092"
+startingOffsets: "latest"
+checkpointEvaluationLocation: "checkpointsReparation"
+checkpointReparationLocation: "checkpointsEvaluation"
+evaluationRequestTopic: "evaluation"
+evaluationResultTopic: "evaluationResult"
+reparationRequestTopic: "reparation"
+reparationResultTopic: "reparationResult"
