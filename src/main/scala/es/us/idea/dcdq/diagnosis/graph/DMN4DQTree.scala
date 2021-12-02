@@ -152,12 +152,13 @@ class DMN4DQTree(vertices: Set[Vertex], edges: Set[DirectedEdge], structureOpt: 
     var branchEdges = Set[DirectedEdge]()
 
     map.keys.foreach {
-      case dud if dud == "DUD" => decisionList = decisionList + Decision(map(dud).toString)
-      case dqa if dqa == "DQA" => assessmentList = assessmentList + Assessment(map(dqa).toString)
-      case dqm if "DQM\\(.+\\)".r.pattern.matcher(dqm).matches() => {
-        dqmList = dqmList + DimensionMeasurement(dqm.replace("DQM(", "").replace(")", ""), map(dqm).toString)
+      case dud if dud == "BRDUD" => decisionList = decisionList + Decision(map(dud).toString)
+      case dqa if dqa == "BRDQA" => assessmentList = assessmentList + Assessment(map(dqa).toString)
+      case dqm if """^(BRDQM).*$""".r.pattern.matcher(dqm).matches() => {
+        //dqmList = dqmList + DimensionMeasurement(dqm.replace("DQM(", "").replace(")", ""), map(dqm).toString)
+        dqmList = dqmList + DimensionMeasurement(dqm, map(dqm).toString)
       }
-      case br if "^BR.*".r.pattern.matcher(br).matches() => brdvList = brdvList + BRDV(br, map(br).toString)
+      case br if """^(BRDV).*$""".r.pattern.matcher(br).matches() => brdvList = brdvList + BRDV(br, map(br).toString)
       case _ =>
     }
 
@@ -350,13 +351,13 @@ object DMN4DQTree{
     val leafTables = extendedDecisionDiagram.getLeafExtendedDMNTables() // Get ExtendedRules for BRDVS (only useful to get input attrs)
 
     // Group by dud output (dud => assessmentCandidates)
-    val dudValuesAndRules = dud.map(er => (er.outputs().find(_.name == "DUD")
-      .getOrElse(throw new IllegalArgumentException("DUD outout expected in DUD table")).value, er.conditions()))
+    val dudValuesAndRules = dud.map(er => (er.outputs().find(_.name == "BRDUD")
+      .getOrElse(throw new IllegalArgumentException("BRDUD outout expected in DUD table")).value, er.conditions()))
       .groupBy(_._1).map(x => (x._1.clean(), x._2.flatMap(_._2)))
 
     // Group by assessment output (assessmentName => measurementCandidates)
-    val assessmentValuesAndRules = dqa.map(er => (er.outputs().find(_.name == "DQA")
-      .getOrElse(throw new IllegalArgumentException("DQA outout expected in Assessment table")).value, er.conditions()))
+    val assessmentValuesAndRules = dqa.map(er => (er.outputs().find(_.name == "BRDQA")
+      .getOrElse(throw new IllegalArgumentException("BRDQA outout expected in Assessment table")).value, er.conditions()))
       .groupBy(_._1).map(x => (x._1.clean(), x._2))
 
     // Group by measurement value (dimension + value) => observationCandidates

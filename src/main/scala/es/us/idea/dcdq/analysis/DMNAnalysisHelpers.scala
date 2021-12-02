@@ -12,16 +12,16 @@ object DMNAnalysisHelpers {
       extendedDecisionDiagram.extendedDMNTables().filter(extTable => predicate(extTable.dmnTableSummary().name()))
         .flatMap(_.extendedRules())
 
-    def getDUD(dudIdentifier: String = "DUD"): List[ExtendedRule] =
+    def getDUD(dudIdentifier: String = "BRDUD"): List[ExtendedRule] =
       getExtendedRules(x => x == dudIdentifier)
 
-    def getDQA(dqaIdentifier: String = "DQA"): List[ExtendedRule] =
+    def getDQA(dqaIdentifier: String = "BRDQA"): List[ExtendedRule] =
       getExtendedRules(x => x == dqaIdentifier)
 
-    def getDQM(measurementPattern: Regex = "DQM\\(.+\\)".r): List[ExtendedRule] =
+    def getDQM(measurementPattern: Regex = """^(BRDQM).*$""".r): List[ExtendedRule] =
       getExtendedRules(x => measurementPattern.pattern.matcher(x).matches())
 
-    def getBRDVs(brdvPattern: Regex = "^BR.*".r): List[ExtendedRule] =
+    def getBRDVs(brdvPattern: Regex = """^(BRDV).*$""".r): List[ExtendedRule] =
       getExtendedRules(x => brdvPattern.pattern.matcher(x).matches())
 
   }
