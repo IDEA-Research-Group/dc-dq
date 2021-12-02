@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>es.us.idea</groupId>
-    <artifactId>dmn4dq</artifactId>
+    <artifactId>dcdq</artifactId>
     <version>0.1.0</version>
 
     <dependencies>
@@ -142,6 +142,12 @@
             <version>1.2.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.29</version>
+        </dependency>
 
 
 
