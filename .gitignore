@@ -30,5 +30,7 @@ models/*
 models
 src/main/scala/es/us/idea/dcdq/junk/*
 src/main/scala/es/us/idea/dcdq/junk
+src/main/scala/es/us/idea/dcdq/tests/*
+src/main/scala/es/us/idea/dcdq/tests
 output/*
 output
