@@ -61,7 +61,7 @@ object UsabilityProfileTransformation {
                                           observedUsabilityProfiles: List[UsabilityProfile],
                                           targetUsabilityProfiles: List[UsabilityProfile],
                                           brdvBasedCostModel: BRDVBasedCostModel
-                                        ): (Long, Int)/*: List[UsabilityProfileCost]*/ = {
+                                        ): List[Solution] /*(Long, Int)*/ /*: List[UsabilityProfileCost]*/ = {
 
     // Solo se mapean los valores que estén en el dominio de este problema (observada + targets)
     val dict = (targetUsabilityProfiles ::: observedUsabilityProfiles)
@@ -119,6 +119,28 @@ object UsabilityProfileTransformation {
     val upBrdvCosts = codifiedSolution.getUpToBrdvCosts
 
 
+    val solution = observedUsabilityProfiles.zipWithIndex.map{ case (obs, index) =>{
+      val target = if(index < selectedUPs.length) selectedUPs(index) else None
+      // val costs = if(index < upCosts.length) Some(upCosts(index)) else None
+
+      val actions = obs.getBRDVs().flatMap(obsBrdv => {
+        target.flatMap(_.getBRDVs().find(t => t.name == obsBrdv.name)) match {
+          case Some(targetBrdv) => {
+            brdvBasedCostModel
+              .brdvCosts.find(_.name == obsBrdv.name)
+              .flatMap(_.costs.find(c => c.observedValue == obsBrdv.value && c.targetValue == targetBrdv.value).map(_.cost)) match {
+              case Some(cost) => Some(Action(obsBrdv.name, obsBrdv.value, targetBrdv.value, cost)) // The action is defined in the cost model
+              case _ => None // The action is not defined!
+            }
+          }
+          case _ => None // it is almost impossible
+        }
+      })
+      Solution(observedUsabilityProfile = obs, targetUsabilityProfile = target, actions = actions.toList, totalCopTime)
+    }}
+
+
+/*
     for(i <- selectedUPs.indices) {
       val obs = observedUsabilityProfiles(i)
       val sel = selectedUPs(i).get
@@ -132,15 +154,17 @@ object UsabilityProfileTransformation {
       println(s"COST_BRDV: ${upBrdvCosts(i).mkString(", ")}")
       println(" *************** ")
     }
+*/
 
 
-
-    val cost = codifiedSolution.getCost
+    //val cost = codifiedSolution.getCost
 //
     //println(s"Selected UPs: \n${selectedUPs.map(_.get.getBRDVs().toList.sortBy(_.name)).mkString("\n")}")
     //println(s"Selected UPs: \n${selectedUPs.map(_.get.getDecision).mkString("\n")}")
     //println(s"Cost: $cost")
-    (totalCopTime, cost)
+    //(totalCopTime, cost)
+
+    solution
   }
 
 
