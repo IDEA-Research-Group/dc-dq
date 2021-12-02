@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>es.us.idea</groupId>
-    <artifactId>dcdq</artifactId>
-    <version>1.1.2</version>
+    <artifactId>dmn4dq</artifactId>
+    <version>0.1.0</version>
 
     <dependencies>
 
