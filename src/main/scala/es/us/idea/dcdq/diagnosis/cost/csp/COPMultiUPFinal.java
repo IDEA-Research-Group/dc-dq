@@ -3,7 +3,6 @@ package es.us.idea.dcdq.diagnosis.cost.csp;
 import es.us.idea.dcdq.diagnosis.cost.csp.codified.costModel.BRDVCost;
 import es.us.idea.dcdq.diagnosis.cost.csp.codified.costModel.TransitionCost;
 import es.us.idea.dcdq.diagnosis.cost.csp.codified.solution.CodifiedMultiOutputSolution;
-import es.us.idea.dcdq.diagnosis.cost.csp.codified.solution.CodifiedSolution;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
